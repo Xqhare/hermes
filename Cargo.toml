@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-athena = {git = "https://github.com/xqhare/athena"}
+nabu = {git = "https://github.com/xqhare/nabu"}
