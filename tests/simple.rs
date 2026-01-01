@@ -69,4 +69,27 @@ mod tests {
         assert_eq!(inner_err.unwrap(), XffValue::from("error"));
         assert!(std::fs::remove_dir_all(t).is_ok());
     }
+
+    #[test]
+    fn internal_server_test() {
+        let t = "tmp5";
+        let con = Hermes::new(t).unwrap();
+        let request: XffValue = "World".into();
+        assert!(con.request(request).is_ok());
+
+        // Spawn new thread to handle the request
+        std::thread::spawn(move || {
+            let t = "tmp5";
+            let con = Hermes::new(t).unwrap();
+            let request = con.await_request();
+            assert!(request.is_ok());
+            let response: XffValue = format!("Hello {}!", request.unwrap()).into();
+            assert!(con.respond(response).is_ok());
+        });
+
+        let response = con.await_response();
+        assert!(response.is_ok());
+        assert_eq!(response.unwrap(), "Hello World!".into());
+        assert!(std::fs::remove_dir_all(t).is_ok());
+    }
 }
