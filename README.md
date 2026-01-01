@@ -1,2 +1,97 @@
-# hermes
-A simple IPC
+# Hermes
+
+> [!important]
+> This IPC uses Disk I/O to send messages between processes.
+> It is not suitable for any real application.
+
+A simple IPC Framework that uses Disk I/O to send data and signals between processes.
+The IPC is split into a Client and Server.
+
+To send data `Hermes` uses `XffValues` provided by my `athena` crate found [here](https://github.com/xqhare/athena).
+
+## But Why?
+Simple: I read the Wikipedia article on [D-Bus](https://en.wikipedia.org/wiki/D-Bus) and had the idea that I could make my own IPC-Bus.
+
+Now, sharing memory regions between processes is a solved problem, but I have no idea how to actually write that myself - and while I brainstormed how to write an IPC myself, I had the brilliant Idea of using files written to disk.
+This is the right amount of stupid and scuffed to make me fall in love with the idea and here we are. 
+
+## Usage    
+
+### Client  
+```rust
+use hermes::Hermes;
+use athena::XffValue;
+
+let mut con = Hermes::new("path/to/pipe");
+let request: XffValue = "World".into();
+con.request(request);
+let answer = con.await_response();
+if let Ok(answer) = answer {
+    println!("{}", answer);
+} else {
+    println!("Error: {}", answer.unwrap_err());
+}
+```
+
+### Server
+It is important to note, that this implementation would shut down after the server has handled one request.
+```rust
+use hermes::Hermes;
+use athena::XffValue;
+
+let mut con = Hermes::new("path/to/pipe");
+let request = con.await_request();
+if let Ok(request) = request {
+    let response: XffValue = format!("Hello {}!", request).into();
+    con.respond(response);
+} else {
+    println!("Error: {}", answer.unwrap_err());
+}
+```
+
+#### Alternate Server
+This implementation would not shut down after the server has handled one request.
+```rust
+use hermes::Hermes;
+use athena::XffValue;
+
+let mut con = Hermes::new("path/to/pipe");
+loop {
+    let request = con.await_request();
+    if let Ok(request) = request {
+        let response: XffValue = format!("Hello {}!", request).into();
+        con.respond(response);
+    } else {
+        println!("Error: {}", answer.unwrap_err());
+    }
+}
+```
+
+### Alternate Usage
+```rust
+use hermes::Hermes;
+use athena::XffValue;
+
+let mut con = Hermes::new("path/to/pipe");
+let request: XffValue = "World".into();
+con.request(request);
+
+// Spawn new thread to handle the request
+std::thread::spawn(move || {
+    let mut con = Hermes::new("path/to/pipe");
+    let request = con.await_request();
+    if let Ok(request) = request {
+        let response: XffValue = format!("Hello {}!", request).into();
+        con.respond(response);
+    } else {
+        println!("Error: {}", answer.unwrap_err());
+    }
+})
+
+let answer = con.await_response();
+if let Ok(answer) = answer {
+    println!("{}", answer);
+} else {
+    println!("Error: {}", answer.unwrap_err());
+}
+```
