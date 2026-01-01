@@ -92,4 +92,26 @@ mod tests {
         assert_eq!(response.unwrap(), "Hello World!".into());
         assert!(std::fs::remove_dir_all(t).is_ok());
     }
+
+    #[test]
+    fn combined_test_partner1() {
+        let t = "tmp6";
+        let con = Hermes::new(t).unwrap();
+        let request: XffValue = "World".into();
+        assert!(con.request(request).is_ok());
+        let response = con.await_response();
+        assert!(response.is_ok());
+        assert_eq!(response.unwrap(), "Hello World!".into());
+        assert!(std::fs::remove_dir_all(t).is_ok());
+    }
+
+    #[test]
+    fn combined_test_partner2() {
+        let t = "tmp6";
+        let con = Hermes::new(t).unwrap();
+        let request = con.await_request();
+        assert!(request.is_ok());
+        let response: XffValue = format!("Hello {}!", request.unwrap()).into();
+        assert!(con.respond(response).is_ok());
+    }
 }

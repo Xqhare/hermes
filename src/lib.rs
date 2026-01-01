@@ -6,7 +6,6 @@ use status_signal::{delete_any_status_set, StatusSignal};
 
 pub mod error;
 mod status_signal;
-mod utils;
 
 const ERROR_FILE: &str = "error.xff";
 const REQUEST_FILE: &str = "request.xff";
