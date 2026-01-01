@@ -55,7 +55,7 @@ This implementation would not shut down after the server has handled one request
 use hermes::Hermes;
 use athena::XffValue;
 
-let mut con = Hermes::new("path/to/pipe");
+let con = Hermes::new("path/to/pipe");
 loop {
     let request = con.await_request();
     if let Ok(request) = request {
@@ -72,13 +72,13 @@ loop {
 use hermes::Hermes;
 use athena::XffValue;
 
-let mut con = Hermes::new("path/to/pipe");
+let con = Hermes::new("path/to/pipe");
 let request: XffValue = "World".into();
 con.request(request);
 
 // Spawn new thread to handle the request
 std::thread::spawn(move || {
-    let mut con = Hermes::new("path/to/pipe");
+    let con = Hermes::new("path/to/pipe");
     let request = con.await_request();
     if let Ok(request) = request {
         let response: XffValue = format!("Hello {}!", request).into();
