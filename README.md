@@ -25,11 +25,11 @@ use athena::XffValue;
 let mut con = Hermes::new("path/to/pipe");
 let request: XffValue = "World".into();
 con.request(request);
-let answer = con.await_response();
-if let Ok(answer) = answer {
-    println!("{}", answer);
+let response = con.await_response();
+if let Ok(response) = response {
+    println!("{}", response);
 } else {
-    println!("Error: {}", answer.unwrap_err());
+    println!("Error: {}", response.unwrap_err());
 }
 ```
 
@@ -45,7 +45,7 @@ if let Ok(request) = request {
     let response: XffValue = format!("Hello {}!", request).into();
     con.respond(response);
 } else {
-    println!("Error: {}", answer.unwrap_err());
+    println!("Error: {}", request.unwrap_err());
 }
 ```
 
@@ -62,7 +62,7 @@ loop {
         let response: XffValue = format!("Hello {}!", request).into();
         con.respond(response);
     } else {
-        println!("Error: {}", answer.unwrap_err());
+        println!("Error: {}", request.unwrap_err());
     }
 }
 ```
@@ -84,14 +84,14 @@ std::thread::spawn(move || {
         let response: XffValue = format!("Hello {}!", request).into();
         con.respond(response);
     } else {
-        println!("Error: {}", answer.unwrap_err());
+        println!("Error: {}", request.unwrap_err());
     }
 })
 
-let answer = con.await_response();
-if let Ok(answer) = answer {
-    println!("{}", answer);
+let response = con.await_response();
+if let Ok(response) = response {
+    println!("{}", response);
 } else {
-    println!("Error: {}", answer.unwrap_err());
+    println!("Error: {}", response.unwrap_err());
 }
 ```
