@@ -1,4 +1,14 @@
 use std::fmt::Display;
+use std::path::Path;
+
+pub fn delete_any_status_set(path: &Path) -> Result<(), std::io::Error> {
+    for status in get_all_status_signals() {
+        if path.join(status.to_string()).exists() {
+            std::fs::remove_file(path.join(status.to_string()))?;
+        }
+    }
+    Ok(())
+}
 
 pub fn get_all_status_signals() -> Vec<StatusSignal> {
     vec![StatusSignal::StatusOpen, StatusSignal::StatusDone, StatusSignal::StatusError]

@@ -2,8 +2,7 @@ use std::path::PathBuf;
 
 use nabu::XffValue;
 use error::Result;
-use status_signal::StatusSignal;
-use utils::{delete_any_status_set, prepare_directory};
+use status_signal::{delete_any_status_set, StatusSignal};
 
 pub mod error;
 mod status_signal;
@@ -51,7 +50,12 @@ impl Hermes {
                 error::PathError::NotDirectory,
             ));
         }
-        prepare_directory(&path)?;
+        if !path.exists() {
+            // create directory
+            if let Err(e) = std::fs::create_dir_all(&path) {
+                return Err(error::HermesError::IOError(e));
+            }
+        }
         Ok(
             Hermes {
                 path, 
