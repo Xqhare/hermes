@@ -29,15 +29,12 @@ let request: XffValue = "World".into();
 if let Err(e) = con.request(request) {
     println!("Error: {:?}", e);
 }
-# let _ = con.await_request();
-# let _ = con.respond("Hello World!".into());
 let response = con.await_response();
 if let Ok(response) = response {
     println!("{:?}", response);
 } else {
     println!("Error: {:?}", response.unwrap_err());
 }
-# assert!(std::fs::remove_dir_all("path").is_ok());
 ```
 
 ### Server
@@ -47,7 +44,6 @@ use hermes::Hermes;
 use nabu::XffValue;
 
 let mut con = Hermes::new("any/path").unwrap();
-# let _ = con.request("World".into());
 let request = con.await_request();
 if let Ok(request) = request {
     let response: XffValue = format!("Hello {}!", request.to_string()).into();
@@ -57,7 +53,6 @@ if let Ok(request) = request {
 } else {
     println!("Error: {:?}", request.unwrap_err());
 }
-# assert!(std::fs::remove_dir_all("any").is_ok());
 ```
 
 #### Alternate Server
@@ -68,7 +63,6 @@ use nabu::XffValue;
 
 let con = Hermes::new("whatever/path").unwrap();
 loop {
-    # break;
     let request = con.await_request();
     if let Ok(request) = request {
         let response: XffValue = format!("Hello {:?}!", request).into();
@@ -79,7 +73,6 @@ loop {
         println!("Error: {:?}", request.unwrap_err());
     }
 }
-# assert!(std::fs::remove_dir_all("whatever").is_ok());
 ```
 
 ### Alternate Usage
@@ -113,5 +106,4 @@ if let Ok(response) = response {
 } else {
     println!("Error: {:?}", response.unwrap_err());
 }
-# assert!(std::fs::remove_dir_all("really").is_ok());
 ```
