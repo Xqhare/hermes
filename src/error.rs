@@ -9,6 +9,8 @@ pub enum HermesError {
     NabuError(String),
     TimeOutError,
     ServerError(XffValue),
+    RequestError(RequestError),
+    ResponseError(ResponseError),
 }
 
 impl HermesError {
@@ -36,6 +38,28 @@ impl HermesError {
             _ => None,
         }
     }
+    pub fn get_inner_request_error(&self) -> Option<&RequestError> {
+        match self {
+            HermesError::RequestError(e) => Some(e),
+            _ => None,
+        }
+    }
+    pub fn get_inner_response_error(&self) -> Option<&ResponseError> {
+        match self {
+            HermesError::ResponseError(e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum ResponseError {
+    ResponseDoesNotExist,
+}
+
+#[derive(Debug)]
+pub enum RequestError {
+    RequestDoesNotExist,
 }
 
 #[derive(Debug)]
