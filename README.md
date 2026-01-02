@@ -8,7 +8,7 @@ A simple IPC Framework that uses Disk I/O to send data between processes.
 The IPC is split into a Client and Server.
 
 To send data `Hermes` uses `XffValues` provided by my `nabu` crate found [here](https://github.com/xqhare/nabu).
-To integrate this into your project, I would recommend using my [athena](https://github.com/xqhare/athena)
+To integrate this into your project, I would recommend using my [Athena](https://github.com/xqhare/athena)
 crate - it's home to `XffValue` and has all you really need.
 
 ## But Why?
