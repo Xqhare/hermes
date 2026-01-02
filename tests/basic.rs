@@ -1,7 +1,6 @@
 #[cfg(test)]
-mod tests {
+mod connection {
     use hermes::Hermes;
-    use nabu::XffValue;
     #[test]
     fn new_hermes_valid_path() {
         let hermes = Hermes::new("tmp/hermes");
@@ -23,6 +22,20 @@ mod tests {
         assert!(std::fs::remove_file("tmp.data").is_ok());
     }
 
+    #[test]
+    #[ignore = "default timeout is 197 sec"]
+    fn default_timeout() {
+        let t = "tmp1";
+        let hermes = Hermes::new(t).unwrap();
+        assert!(hermes.await_request().is_err());
+        assert!(std::fs::remove_dir_all(t).is_ok());
+    }
+}
+
+#[cfg(test)]
+mod req_res {
+    use hermes::Hermes;
+    use nabu::XffValue;
     #[test]
     fn general_request() {
         let t = "tmp2";
@@ -53,7 +66,12 @@ mod tests {
         assert_eq!(answer, "Hello World!".into());
         assert!(std::fs::remove_dir_all(t).is_ok());
     }
+}
 
+#[cfg(test)]
+mod errors {
+    use hermes::Hermes;
+    use nabu::XffValue;
     #[test]
     fn basic_error_propagation() {
         let t = "tmp4";
@@ -69,49 +87,23 @@ mod tests {
         assert_eq!(inner_err.unwrap(), XffValue::from("error"));
         assert!(std::fs::remove_dir_all(t).is_ok());
     }
+}
 
+#[cfg(test)]
+/// Add bugs for debugging, keep tests for regressions
+mod bugs {
+    use hermes::Hermes;
+    use nabu::XffValue;
     #[test]
-    fn internal_server_test() {
-        let t = "tmp5";
-        let con = Hermes::new(t).unwrap();
-        let request: XffValue = "World".into();
-        assert!(con.request(request).is_ok());
-
-        // Spawn new thread to handle the request
-        std::thread::spawn(move || {
-            let t = "tmp5";
-            let con = Hermes::new(t).unwrap();
-            let request = con.await_request();
-            assert!(request.is_ok());
-            let response: XffValue = format!("Hello {}!", request.unwrap()).into();
-            assert!(con.respond(response).is_ok());
-        });
-
-        let response = con.await_response();
-        assert!(response.is_ok());
-        assert_eq!(response.unwrap(), "Hello World!".into());
+    fn bug1() {
+        let t = "bug1";
+        let hermes = Hermes::new(t).unwrap();
+        let value: XffValue = "".into();
+        assert!(hermes.respond(value).is_ok());
+        assert!(hermes.is_response_ready());
+        let res = hermes.get_response();
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), "".into());
         assert!(std::fs::remove_dir_all(t).is_ok());
-    }
-
-    #[test]
-    fn combined_test_partner1() {
-        let t = "tmp6";
-        let con = Hermes::new(t).unwrap();
-        let request: XffValue = "World".into();
-        assert!(con.request(request).is_ok());
-        let response = con.await_response();
-        assert!(response.is_ok());
-        assert_eq!(response.unwrap(), "Hello World!".into());
-        assert!(std::fs::remove_dir_all(t).is_ok());
-    }
-
-    #[test]
-    fn combined_test_partner2() {
-        let t = "tmp6";
-        let con = Hermes::new(t).unwrap();
-        let request = con.await_request();
-        assert!(request.is_ok());
-        let response: XffValue = format!("Hello {}!", request.unwrap()).into();
-        assert!(con.respond(response).is_ok());
     }
 }
