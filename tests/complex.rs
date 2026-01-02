@@ -27,6 +27,42 @@ mod internal_server_test {
 }
 
 #[cfg(test)]
+mod several_requests {
+    use hermes::Hermes;
+    use nabu::XffValue;
+    #[test]
+    fn several_requests_client() {
+        let t = "tmp8";
+        let con = Hermes::new(t).unwrap();
+        for i in 0..4500 {
+            let request: XffValue = format!("World {}", i).into();
+            assert!(con.request(request.clone()).is_ok());
+            let answer = con.await_response();
+            assert!(answer.is_ok());
+            assert_eq!(answer.unwrap(), format!("Hello {}!", request.into_string().unwrap()).into());
+        }
+        assert!(std::fs::remove_dir_all(t).is_ok());
+    }
+
+    #[test]
+    fn several_requests_server() {
+        let t = "tmp8";
+        let con = Hermes::new(t).unwrap();
+        let mut i = 0;
+        loop {
+            let request = con.await_request();
+            assert!(request.is_ok());
+            let response: XffValue = format!("Hello {}!", request.unwrap()).into();
+            assert!(con.respond(response).is_ok());
+            i += 1;
+            if i == 4500 {
+                break;
+            }
+        }
+    }
+}
+
+#[cfg(test)]
 mod external_server_test {
     use hermes::Hermes;
     use nabu::{xff, XffValue};
