@@ -20,7 +20,7 @@ This is the right amount of stupid and scuffed to make me fall in love with the 
 ## Usage    
 
 ### Client  
-```rust
+```rust, no_run
 use hermes::Hermes;
 use nabu::XffValue;
 
@@ -39,7 +39,7 @@ if let Ok(response) = response {
 
 ### Server
 It is important to note, that this implementation would shut down after the server has handled one request.
-```rust
+```rust, no_run
 use hermes::Hermes;
 use nabu::XffValue;
 
@@ -57,7 +57,7 @@ if let Ok(request) = request {
 
 #### Alternate Server
 This implementation would not shut down after the server has handled one request.
-```rust
+```rust, no_run
 use hermes::Hermes;
 use nabu::XffValue;
 
