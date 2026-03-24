@@ -11,7 +11,11 @@ pub fn delete_any_status_set(path: &Path) -> Result<(), std::io::Error> {
 }
 
 pub fn get_all_status_signals() -> Vec<StatusSignal> {
-    vec![StatusSignal::StatusOpen, StatusSignal::StatusDone, StatusSignal::StatusError]
+    vec![
+        StatusSignal::StatusOpen,
+        StatusSignal::StatusDone,
+        StatusSignal::StatusError,
+    ]
 }
 
 pub enum StatusSignal {
@@ -28,5 +32,4 @@ impl Display for StatusSignal {
             StatusSignal::StatusError => write!(f, "status-error"),
         }
     }
-    
 }
