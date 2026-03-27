@@ -109,7 +109,7 @@ impl Hermes {
     /// assert!(hermes.is_request_ready());
     /// # assert!(std::fs::remove_dir_all("req_ready").is_ok());
     /// ```
-    #[must_use] 
+    #[must_use]
     pub fn is_request_ready(&self) -> bool {
         self.path
             .join(StatusSignal::StatusOpen.to_string())
@@ -302,7 +302,7 @@ impl Hermes {
     /// assert!(hermes.is_response_ready());
     /// # assert!(std::fs::remove_dir_all("res_ready").is_ok());
     /// ```
-    #[must_use] 
+    #[must_use]
     pub fn is_response_ready(&self) -> bool {
         self.path
             .join(StatusSignal::StatusDone.to_string())
@@ -476,17 +476,20 @@ impl Hermes {
             self.path.join(ERROR_FILE),
         );
         if req_file.exists()
-            && let Err(e) = std::fs::remove_file(req_file) {
-                return Err(error::HermesError::IOError(e));
-            }
+            && let Err(e) = std::fs::remove_file(req_file)
+        {
+            return Err(error::HermesError::IOError(e));
+        }
         if resp_file.exists()
-            && let Err(e) = std::fs::remove_file(resp_file) {
-                return Err(error::HermesError::IOError(e));
-            }
+            && let Err(e) = std::fs::remove_file(resp_file)
+        {
+            return Err(error::HermesError::IOError(e));
+        }
         if err_file.exists()
-            && let Err(e) = std::fs::remove_file(err_file) {
-                return Err(error::HermesError::IOError(e));
-            }
+            && let Err(e) = std::fs::remove_file(err_file)
+        {
+            return Err(error::HermesError::IOError(e));
+        }
         Ok(())
     }
 
