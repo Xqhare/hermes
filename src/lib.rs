@@ -45,7 +45,7 @@ impl Hermes {
     /// ```
     pub fn new<P: Into<PathBuf>>(path: P) -> Result<Hermes> {
         let path = path.into();
-        if path.to_string_lossy().len() == 0 {
+        if path.to_string_lossy().is_empty() {
             return Err(error::HermesError::PathError(error::PathError::EmptyPath));
         }
         if path.exists() && !path.is_dir() {
@@ -109,6 +109,7 @@ impl Hermes {
     /// assert!(hermes.is_request_ready());
     /// # assert!(std::fs::remove_dir_all("req_ready").is_ok());
     /// ```
+    #[must_use] 
     pub fn is_request_ready(&self) -> bool {
         self.path
             .join(StatusSignal::StatusOpen.to_string())
@@ -206,9 +207,7 @@ impl Hermes {
             return Err(error::HermesError::IOError(e));
         }
         if self.garbage_collection {
-            if let Err(e) = self.free_resources() {
-                return Err(e);
-            }
+            self.free_resources()?;
         }
         Ok(answer.unwrap())
     }
@@ -303,6 +302,7 @@ impl Hermes {
     /// assert!(hermes.is_response_ready());
     /// # assert!(std::fs::remove_dir_all("res_ready").is_ok());
     /// ```
+    #[must_use] 
     pub fn is_response_ready(&self) -> bool {
         self.path
             .join(StatusSignal::StatusDone.to_string())
@@ -401,9 +401,7 @@ impl Hermes {
             return Err(error::HermesError::IOError(e));
         }
         if self.garbage_collection {
-            if let Err(e) = self.free_resources() {
-                return Err(e);
-            }
+            self.free_resources()?;
         }
         Ok(answer.unwrap())
     }
@@ -477,21 +475,18 @@ impl Hermes {
             self.path.join(RESPONSE_FILE),
             self.path.join(ERROR_FILE),
         );
-        if req_file.exists() {
-            if let Err(e) = std::fs::remove_file(req_file) {
+        if req_file.exists()
+            && let Err(e) = std::fs::remove_file(req_file) {
                 return Err(error::HermesError::IOError(e));
             }
-        }
-        if resp_file.exists() {
-            if let Err(e) = std::fs::remove_file(resp_file) {
+        if resp_file.exists()
+            && let Err(e) = std::fs::remove_file(resp_file) {
                 return Err(error::HermesError::IOError(e));
             }
-        }
-        if err_file.exists() {
-            if let Err(e) = std::fs::remove_file(err_file) {
+        if err_file.exists()
+            && let Err(e) = std::fs::remove_file(err_file) {
                 return Err(error::HermesError::IOError(e));
             }
-        }
         Ok(())
     }
 
@@ -519,7 +514,7 @@ impl Hermes {
     /// Should this also throw an Error it's probably time to panic!
     ///
     /// # Arguments
-    /// * `error` - The error you want to send to Hermes - a XffValue
+    /// * `error` - The error you want to send to Hermes - a `XffValue`
     ///
     /// # Errors
     /// If system calls fail, returns an error.
