@@ -39,7 +39,10 @@ mod several_requests {
             assert!(con.request(request.clone()).is_ok());
             let answer = con.await_response();
             assert!(answer.is_ok());
-            assert_eq!(answer.unwrap(), format!("Hello {}!", request.into_string().unwrap()).into());
+            assert_eq!(
+                answer.unwrap(),
+                format!("Hello {}!", request.into_string().unwrap()).into()
+            );
         }
         assert!(std::fs::remove_dir_all(t).is_ok());
     }
@@ -65,7 +68,7 @@ mod several_requests {
 #[cfg(test)]
 mod external_server_test {
     use hermes::Hermes;
-    use nabu::{xff, XffValue};
+    use nabu::{XffValue, xff};
     #[test]
     fn combined_test_partner1() {
         let t = "tmp6";
@@ -92,11 +95,23 @@ mod external_server_test {
     fn long_running_combined_test_partner1() {
         let t = "tmp7";
         let con = Hermes::new(t).unwrap();
-        let request: XffValue = xff!(vec![Into::<XffValue>::into("World"), Into::<XffValue>::into("Terminal"), Into::<XffValue>::into("Europa"), Into::<XffValue>::into("London"), Into::<XffValue>::into("Lena"), ]);
+        let request: XffValue = xff!(vec![
+            Into::<XffValue>::into("World"),
+            Into::<XffValue>::into("Terminal"),
+            Into::<XffValue>::into("Europa"),
+            Into::<XffValue>::into("London"),
+            Into::<XffValue>::into("Lena"),
+        ]);
         assert!(con.request(request).is_ok());
         let response = con.await_response();
         assert!(response.is_ok());
-        let expected = xff!(vec![Into::<XffValue>::into("Hello World!"), Into::<XffValue>::into("Hello Terminal!"), Into::<XffValue>::into("Hello Europa!"), Into::<XffValue>::into("Hello London!"), Into::<XffValue>::into("Hello Lena!"), ]);
+        let expected = xff!(vec![
+            Into::<XffValue>::into("Hello World!"),
+            Into::<XffValue>::into("Hello Terminal!"),
+            Into::<XffValue>::into("Hello Europa!"),
+            Into::<XffValue>::into("Hello London!"),
+            Into::<XffValue>::into("Hello Lena!"),
+        ]);
         assert_eq!(response.unwrap(), expected);
         assert!(std::fs::remove_dir_all(t).is_ok());
     }

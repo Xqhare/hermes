@@ -14,36 +14,42 @@ pub enum HermesError {
 }
 
 impl HermesError {
+    #[must_use]
     pub fn get_inner_io_error(&self) -> Option<&std::io::Error> {
         match self {
             HermesError::IOError(e) => Some(e),
             _ => None,
         }
     }
+    #[must_use]
     pub fn get_inner_nabu_error(&self) -> Option<String> {
         match self {
             HermesError::NabuError(e) => Some(e.clone()),
             _ => None,
         }
     }
+    #[must_use]
     pub fn get_inner_server_error(&self) -> Option<XffValue> {
         match self {
             HermesError::ServerError(e) => Some(e.clone()),
             _ => None,
         }
     }
+    #[must_use]
     pub fn get_inner_path_error(&self) -> Option<&PathError> {
         match self {
             HermesError::PathError(e) => Some(e),
             _ => None,
         }
     }
+    #[must_use]
     pub fn get_inner_request_error(&self) -> Option<&RequestError> {
         match self {
             HermesError::RequestError(e) => Some(e),
             _ => None,
         }
     }
+    #[must_use]
     pub fn get_inner_response_error(&self) -> Option<&ResponseError> {
         match self {
             HermesError::ResponseError(e) => Some(e),

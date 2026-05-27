@@ -2,9 +2,9 @@
 
 use std::path::PathBuf;
 
-use nabu::XffValue;
 use error::Result;
-use status_signal::{delete_any_status_set, StatusSignal};
+use nabu::XffValue;
+use status_signal::{StatusSignal, delete_any_status_set};
 
 pub mod error;
 mod status_signal;
@@ -45,10 +45,8 @@ impl Hermes {
     /// ```
     pub fn new<P: Into<PathBuf>>(path: P) -> Result<Hermes> {
         let path = path.into();
-        if path.to_string_lossy().len() == 0 {
-            return Err(error::HermesError::PathError(
-                error::PathError::EmptyPath,
-            ));
+        if path.to_string_lossy().is_empty() {
+            return Err(error::HermesError::PathError(error::PathError::EmptyPath));
         }
         if path.exists() && !path.is_dir() {
             return Err(error::HermesError::PathError(
@@ -61,19 +59,17 @@ impl Hermes {
                 return Err(error::HermesError::IOError(e));
             }
         }
-        Ok(
-            Hermes {
-                path, 
-                garbage_collection: false 
-            }
-        )
+        Ok(Hermes {
+            path,
+            garbage_collection: false,
+        })
     }
 
     /// Sends a request to the server.
-    /// 
+    ///
     /// # Arguments
     /// * `value` - The value you want to send to Hermes.
-    /// 
+    ///
     /// # Errors
     /// If system calls fail, returns an error.
     ///
@@ -87,7 +83,10 @@ impl Hermes {
     /// # assert!(std::fs::remove_dir_all("req").is_ok());
     /// ```
     pub fn request(&self, value: XffValue) -> Result<()> {
-        let (req_file, status_signal_file) = (self.path.join(REQUEST_FILE), self.path.join(StatusSignal::StatusOpen.to_string()));
+        let (req_file, status_signal_file) = (
+            self.path.join(REQUEST_FILE),
+            self.path.join(StatusSignal::StatusOpen.to_string()),
+        );
         if let Err(e) = nabu::serde::write(req_file, value) {
             return Err(error::HermesError::NabuError(e.to_string()));
         }
@@ -110,12 +109,15 @@ impl Hermes {
     /// assert!(hermes.is_request_ready());
     /// # assert!(std::fs::remove_dir_all("req_ready").is_ok());
     /// ```
+    #[must_use]
     pub fn is_request_ready(&self) -> bool {
-        self.path.join(StatusSignal::StatusOpen.to_string()).exists()
+        self.path
+            .join(StatusSignal::StatusOpen.to_string())
+            .exists()
     }
 
     /// Attempts to immideatly get the request from Hermes.
-    /// 
+    ///
     /// # Errors
     /// If system calls fail or the request does not exist, returns an error.
     ///
@@ -189,21 +191,23 @@ impl Hermes {
         if error_file.exists() {
             let error = nabu::serde::read(error_file);
             if error.is_err() {
-                return Err(error::HermesError::NabuError(error.unwrap_err().to_string()));
+                return Err(error::HermesError::NabuError(
+                    error.unwrap_err().to_string(),
+                ));
             }
             return Err(error::HermesError::ServerError(error.unwrap()));
         }
         let answer = nabu::serde::read(self.path.join(REQUEST_FILE));
         if answer.is_err() {
-            return Err(error::HermesError::NabuError(answer.unwrap_err().to_string()));
+            return Err(error::HermesError::NabuError(
+                answer.unwrap_err().to_string(),
+            ));
         }
         if let Err(e) = std::fs::remove_file(signal_status_file) {
             return Err(error::HermesError::IOError(e));
         }
         if self.garbage_collection {
-            if let Err(e) = self.free_resources() {
-                return Err(e);
-            }
+            self.free_resources()?;
         }
         Ok(answer.unwrap())
     }
@@ -232,7 +236,7 @@ impl Hermes {
     }
 
     /// Waits for a request, with a timeout of around 3 minutes
-    /// 
+    ///
     /// # Errors
     /// If system calls fail, returns an error
     ///
@@ -255,7 +259,7 @@ impl Hermes {
     }
 
     /// Responds to a request from the client
-    /// 
+    ///
     /// # Arguments
     /// * `value` - The value you want to send to Hermes
     ///
@@ -272,7 +276,10 @@ impl Hermes {
     /// # assert!(std::fs::remove_dir_all("res").is_ok());
     /// ```
     pub fn respond(&self, value: XffValue) -> Result<()> {
-        let (res_file, status_signal_file) = (self.path.join(RESPONSE_FILE), self.path.join(StatusSignal::StatusDone.to_string()));
+        let (res_file, status_signal_file) = (
+            self.path.join(RESPONSE_FILE),
+            self.path.join(StatusSignal::StatusDone.to_string()),
+        );
         if let Err(e) = nabu::serde::write(res_file, value) {
             return Err(error::HermesError::NabuError(e.to_string()));
         }
@@ -295,12 +302,15 @@ impl Hermes {
     /// assert!(hermes.is_response_ready());
     /// # assert!(std::fs::remove_dir_all("res_ready").is_ok());
     /// ```
+    #[must_use]
     pub fn is_response_ready(&self) -> bool {
-        self.path.join(StatusSignal::StatusDone.to_string()).exists()
+        self.path
+            .join(StatusSignal::StatusDone.to_string())
+            .exists()
     }
 
     /// Attempts to immideatly get the response from Hermes.
-    /// 
+    ///
     /// # Errors
     /// If system calls fail or the response does not exist, returns an error.
     ///
@@ -333,11 +343,11 @@ impl Hermes {
     }
 
     /// Internal await function
-    /// 
+    ///
     /// # Arguments
     /// * `max_iterations` - The maximum number of iterations to wait for a response.
     /// * `break_on_max` - If true, will return an error if the maximum number of iterations is reached.
-    /// 
+    ///
     /// # Errors
     /// If system calls fail, if the maximum number of iterations is reached and `break_on_max` is true, or if an error file exists, returns an error.
     fn await_resp(&self, max_iterations: u32, break_on_max: bool) -> Result<XffValue> {
@@ -375,27 +385,29 @@ impl Hermes {
         if error_file.exists() {
             let error = nabu::serde::read(error_file);
             if error.is_err() {
-                return Err(error::HermesError::NabuError(error.unwrap_err().to_string()));
+                return Err(error::HermesError::NabuError(
+                    error.unwrap_err().to_string(),
+                ));
             }
             return Err(error::HermesError::ServerError(error.unwrap()));
         }
         let answer = nabu::serde::read(self.path.join(RESPONSE_FILE));
         if answer.is_err() {
-            return Err(error::HermesError::NabuError(answer.unwrap_err().to_string()));
+            return Err(error::HermesError::NabuError(
+                answer.unwrap_err().to_string(),
+            ));
         }
         if let Err(e) = std::fs::remove_file(signal_status_file) {
             return Err(error::HermesError::IOError(e));
         }
         if self.garbage_collection {
-            if let Err(e) = self.free_resources() {
-                return Err(e);
-            }
+            self.free_resources()?;
         }
         Ok(answer.unwrap())
     }
 
     /// Waits for a response from Hermes with a timeout of around 3 minutes
-    /// 
+    ///
     /// # Errors
     /// If system calls fail, or if an error file exists, returns an error.
     ///
@@ -417,7 +429,7 @@ impl Hermes {
     }
 
     /// Waits for a response from Hermes, without a timeout.
-    /// 
+    ///
     /// # Errors
     /// If system calls fail, or if an error file exists, returns an error.
     ///
@@ -458,21 +470,25 @@ impl Hermes {
     /// # assert!(std::fs::remove_dir_all("free_res").is_ok());
     /// ```
     pub fn free_resources(&self) -> Result<()> {
-        let (req_file, resp_file, err_file) = (self.path.join(REQUEST_FILE), self.path.join(RESPONSE_FILE), self.path.join(ERROR_FILE));
-        if req_file.exists() {
-            if let Err(e) = std::fs::remove_file(req_file) {
-                return Err(error::HermesError::IOError(e));
-            }
+        let (req_file, resp_file, err_file) = (
+            self.path.join(REQUEST_FILE),
+            self.path.join(RESPONSE_FILE),
+            self.path.join(ERROR_FILE),
+        );
+        if req_file.exists()
+            && let Err(e) = std::fs::remove_file(req_file)
+        {
+            return Err(error::HermesError::IOError(e));
         }
-        if resp_file.exists() {
-            if let Err(e) = std::fs::remove_file(resp_file) {
-                return Err(error::HermesError::IOError(e));
-            }
+        if resp_file.exists()
+            && let Err(e) = std::fs::remove_file(resp_file)
+        {
+            return Err(error::HermesError::IOError(e));
         }
-        if err_file.exists() {
-            if let Err(e) = std::fs::remove_file(err_file) {
-                return Err(error::HermesError::IOError(e));
-            }
+        if err_file.exists()
+            && let Err(e) = std::fs::remove_file(err_file)
+        {
+            return Err(error::HermesError::IOError(e));
         }
         Ok(())
     }
@@ -501,7 +517,7 @@ impl Hermes {
     /// Should this also throw an Error it's probably time to panic!
     ///
     /// # Arguments
-    /// * `error` - The error you want to send to Hermes - a XffValue
+    /// * `error` - The error you want to send to Hermes - a `XffValue`
     ///
     /// # Errors
     /// If system calls fail, returns an error.
